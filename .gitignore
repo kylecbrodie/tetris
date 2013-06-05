@@ -1,0 +1,17 @@
+## Mac OS X ##
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+
+## Eclipse ##
+bin/**
+.project
+.classpath
+.settings/
+
+## Java ##
+*.class
+*.jar
+*.war
+*.ear
