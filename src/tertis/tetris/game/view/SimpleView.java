@@ -23,194 +23,199 @@ import tertis.tetris.game.model.TetrisModel;
 
 @SuppressWarnings("serial")
 public class SimpleView extends JPanel implements TetrisView {
-	
-    public SimpleView(int height, int width) {
-        _panel = new GridPanel(height, width, true, Color.WHITE);
-        _previewPanel = new GridPanel(4, 4, false, Color.BLACK);
-        
-        _scorePanel = new ScorePanel();
-        
-        this.setLayout(new BorderLayout());
 
-        this.add(_panel, BorderLayout.CENTER);
-        
-        JPanel control = new JPanel();
-        control.setLayout(new GridLayout(2, 1, 1, 10));
-        
-        control.add(createStartButton());
-        control.add(createPauseButton());
+	private TetrisModel model;
+	private GridPanel panel;
+	private GridPanel previewPanel;
+	private ScorePanel scorePanel;
+	private JButton start, pause;
 
-        JPanel box = new JPanel();
-        box.setLayout(new BoxLayout(box, BoxLayout.Y_AXIS));
-        box.add(control);
+	public SimpleView(int height, int width) {
+		panel = new GridPanel(height, width, true, Color.WHITE);
+		previewPanel = new GridPanel(4, 4, false, Color.BLACK);
 
-        JPanel preview = new JPanel();
-        _previewPanel.setPreferredSize(new Dimension(90, 90));
-        preview.add(_previewPanel);
+		scorePanel = new ScorePanel();
 
-        JPanel box2 = new JPanel();
-        box2.setLayout(new BoxLayout(box2, BoxLayout.Y_AXIS));
+		this.setLayout(new BorderLayout());
 
-        _scorePanel.setPreferredSize(new Dimension(80, 30));
+		this.add(panel, BorderLayout.CENTER);
 
-        box2.add(_scorePanel);
-        box2.add(preview);
-        
-        JPanel all = new JPanel();
-        all.setLayout(new BorderLayout());
-        all.add(box, BorderLayout.NORTH);
-        all.add(box2, BorderLayout.SOUTH);
-        
-        this.add(all, BorderLayout.EAST);
+		JPanel control = new JPanel();
+		control.setLayout(new GridLayout(2, 1, 1, 10));
 
-        setupKeyboard();
-        
-    }
+		control.add(createStartButton());
+		control.add(createPauseButton());
 
-    @Override
-    public void setModel(TetrisModel model) {
-        _model = model;
-        _model.start();
-    }
+		JPanel box = new JPanel();
+		box.setLayout(new BoxLayout(box, BoxLayout.Y_AXIS));
+		box.add(control);
 
-    public void scoreChanged() { _scorePanel.setScore(_model.getScore()); }
+		JPanel preview = new JPanel();
+		previewPanel.setPreferredSize(new Dimension(90, 90));
+		preview.add(previewPanel);
 
-    public void mapChanged() { _panel.setModel(_model.getViewMap()); }
+		JPanel box2 = new JPanel();
+		box2.setLayout(new BoxLayout(box2, BoxLayout.Y_AXIS));
 
-    public void previewChanged() { _previewPanel.setModel(_model.getPreviewShape()); }
+		scorePanel.setPreferredSize(new Dimension(80, 30));
 
-    public void gameOver() {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-        JOptionPane.showMessageDialog(SimpleView.this,
-            "GAME OVER.\nYour score is " + _model.getScore() + ".",
-            "GAME OVER",
-            JOptionPane.INFORMATION_MESSAGE);
-        _start.setText("Start");
-        _pause.setText("Pause");
-            }
-        });
-    }
+		box2.add(scorePanel);
+		box2.add(preview);
 
-    public void rowsToDelete(final int row[], final int count) {
-        _panel.blink(row, count);
-    }
+		JPanel all = new JPanel();
+		all.setLayout(new BorderLayout());
+		all.add(box, BorderLayout.NORTH);
+		all.add(box2, BorderLayout.SOUTH);
 
-    private JButton createStartButton() {
-        _start = new JButton("Stop");
-        _start.setPreferredSize(new Dimension(90, 30));
-        _start.addActionListener( new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                if (_model == null) return;
-                if (_model.isStopped()) {
-                    _model.start();
-                    _start.setText("Stop");
-                } else {
-                    _model.stop();
-                    _start.setText("Start");
-                }
-                _pause.setText("Pause");
-            }
-        });
-        return _start;
-    }
+		this.add(all, BorderLayout.EAST);
 
-    private JButton createPauseButton() {
-        _pause = new JButton("Pause");
-        _pause.setPreferredSize(new Dimension(90, 30));
-        _pause.addActionListener( new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                pauseOrResume();
-            }
-        });
-        return _pause;
-    }
+		setupKeyboard();
+	}
 
-    private void setupKeyboard() {
-        InputMap input = this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
-        input.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0), "left");
-        input.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), "right");
-        input.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), "up");
-        input.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), "down");
-        input.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "escape");
-        input.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), "space");
-        ActionMap action = this.getActionMap();
-        action.put("left",
-            new AbstractAction() {
-                public void actionPerformed(ActionEvent e) {
-                    if (_model == null) return;
-                    _model.left();
-                }
-            });
+	@Override
+	public void setModel(TetrisModel model) {
+		this.model = model;
+		model.start();
+	}
 
-        action.put("right",
-            new AbstractAction() {
-                public void actionPerformed(ActionEvent e) {
-                    if (_model == null) return;
-                    _model.right();
-                }
-            });
-        action.put("up",
-            new AbstractAction() {
-                public void actionPerformed(ActionEvent e) {
-                    if (_model == null) return;
-                    _model.rotate();
-                }
-            });
-        action.put("down",
-            new AbstractAction() {
-                public void actionPerformed(ActionEvent e) {
-                    if (_model == null) return;                    
-                    _model.down();
-                }
-            });
-        action.put("escape",
-            new AbstractAction() {
-                public void actionPerformed(ActionEvent e) {
-                    _pause.doClick();
-                }
-            });
-            action.put("space",
-            new AbstractAction() {
-                public void actionPerformed(ActionEvent e) {
-                    if (_model == null) return;
-                    _model.down();
-                    _model.down();
-                    _model.down();
-                    _model.down();
-                    _model.down();
-                    _model.down();
-                    _model.down();
-                    _model.down();
-                    _model.down();
-                    _model.down();
-                    _model.down();
-                    _model.down();
-                    _model.down();
-                    _model.down();
-                    _model.down();
-                    _model.down();
-                }
-                
-            
-            });
+	public void scoreChanged() {
+		scorePanel.setScore(model.getScore());
+	}
 
-    }
-    private void pauseOrResume() {
-        if (_model == null) return;
-        if (_model.isStopped()) return;
-        if (_model.isPaused()) {
-            _model.resume();
-            _pause.setText("Pause");
-        } else {
-            _model.pause();
-            _pause.setText("Continue");
-        }
-    }
+	public void boardChanged() {
+		panel.setModel(model.getViewBoard());
+	}
 
-    private TetrisModel _model;
-    private GridPanel _panel;
-    private GridPanel _previewPanel;
-    private ScorePanel _scorePanel;
-    private JButton _start, _pause;
+	public void previewChanged() {
+		previewPanel.setModel(model.getPreviewShape());
+	}
+
+	public void gameOver() {
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				JOptionPane.showMessageDialog(SimpleView.this, "GAME OVER.\nYour score is " + model.getScore() + ".", "GAME OVER",
+						JOptionPane.INFORMATION_MESSAGE);
+				start.setText("Start");
+				pause.setText("Pause");
+			}
+		});
+	}
+
+	public void rowsToDelete(final int row[], final int count) {
+		panel.blink(row, count);
+	}
+
+	private JButton createStartButton() {
+		start = new JButton("Stop");
+		start.setPreferredSize(new Dimension(90, 30));
+		start.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (model == null)
+					return;
+				if (model.isStopped()) {
+					model.start();
+					start.setText("Stop");
+				} else {
+					model.stop();
+					start.setText("Start");
+				}
+				pause.setText("Pause");
+			}
+		});
+		return start;
+	}
+
+	private JButton createPauseButton() {
+		pause = new JButton("Pause");
+		pause.setPreferredSize(new Dimension(90, 30));
+		pause.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				pauseOrResume();
+			}
+		});
+		return pause;
+	}
+
+	private void setupKeyboard() {
+		InputMap input = this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+		input.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0), "left");
+		input.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), "right");
+		input.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), "up");
+		input.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), "down");
+		input.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "escape");
+		input.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), "space");
+		ActionMap action = this.getActionMap();
+		action.put("left", new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {
+				if (model == null)
+					return;
+				model.left();
+			}
+		});
+
+		action.put("right", new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {
+				if (model == null)
+					return;
+				model.right();
+			}
+		});
+		action.put("up", new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {
+				if (model == null)
+					return;
+				model.rotate();
+			}
+		});
+		action.put("down", new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {
+				if (model == null)
+					return;
+				model.down();
+			}
+		});
+		action.put("escape", new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {
+				pause.doClick();
+			}
+		});
+		action.put("space", new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {
+				if (model == null)
+					return;
+				model.down();
+				model.down();
+				model.down();
+				model.down();
+				model.down();
+				model.down();
+				model.down();
+				model.down();
+				model.down();
+				model.down();
+				model.down();
+				model.down();
+				model.down();
+				model.down();
+				model.down();
+				model.down();
+			}
+
+		});
+
+	}
+
+	private void pauseOrResume() {
+		if (model == null)
+			return;
+		if (model.isStopped())
+			return;
+		if (model.isPaused()) {
+			model.resume();
+			pause.setText("Pause");
+		} else {
+			model.pause();
+			pause.setText("Continue");
+		}
+	}
 }
