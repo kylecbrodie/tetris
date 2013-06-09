@@ -60,10 +60,10 @@ public class GridPanel extends JPanel {
 
 	public void blink(int row[], int count) {
 		try {
-			setRowsColor(row, 1, Color.RED);
+			setRowsColor(row, count, Color.RED);
 			repaint();
 			Thread.sleep(150);
-			setRowsColor(row, 1, Color.GRAY);
+			setRowsColor(row, count, Color.GRAY);
 			// repaint();
 			// Thread.sleep(50);
 			// setRowsColor(row, 1, Color.YELLOW);
