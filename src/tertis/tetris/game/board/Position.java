@@ -3,7 +3,7 @@ package tertis.tetris.game.board;
 /**
  * A helper class to hold a position in an IntMatrix.
  */
-class Position implements Cloneable, Comparable<Position> {
+public class Position implements Cloneable, Comparable<Position> {
     
 	public int row;
     public int col;
