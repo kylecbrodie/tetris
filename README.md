@@ -1,4 +1,4 @@
-# Global Tetris
+# Tetris Against Humanity
 
 A globally coordinated Tetris game. As a social experiment, it is quite interesting;
 Can a random assortment of **anonymous** people from all over the globe coordinate for a
