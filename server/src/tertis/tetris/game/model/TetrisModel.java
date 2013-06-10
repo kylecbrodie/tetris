@@ -5,15 +5,16 @@ import java.rmi.RemoteException;
 
 import tertis.tetris.game.board.IntMatrix;
 import tertis.tetris.game.server.PlayerQueue;
-import tertis.tetris.game.view.TetrisView;
 
 public interface TetrisModel extends Remote {
 
-	public void connect(TetrisView player) throws RemoteException;
+	public boolean connect(String player) throws RemoteException;
 
-	public void disconnect(TetrisView player) throws RemoteException;
+	public void disconnect(String player) throws RemoteException;
 
 	public boolean isStopped() throws RemoteException;
+	
+	public boolean isMyTurn(String player) throws RemoteException;
 	
 	public int getScore() throws RemoteException;
 

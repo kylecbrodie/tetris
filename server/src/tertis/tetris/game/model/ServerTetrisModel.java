@@ -1,13 +1,10 @@
 package tertis.tetris.game.model;
 
-import java.rmi.RemoteException;
-
 import tertis.tetris.game.board.IntMatrix;
 import tertis.tetris.game.board.Position;
 import tertis.tetris.game.board.piece.ActivePiece;
 import tertis.tetris.game.board.piece.Piece;
 import tertis.tetris.game.server.PlayerQueue;
-import tertis.tetris.game.view.TetrisView;
 
 /**
  * The model of the Tetris game. It's the MODEL of the M-VC pattern.
@@ -44,7 +41,6 @@ public class ServerTetrisModel implements TetrisModel, Runnable {
 		piece.next(getNextPiece());
 		update();
 		score = 0;
-		queue.scoreChanged();
 		Thread t = new Thread(this);
 		t.start();
 	}
@@ -68,7 +64,6 @@ public class ServerTetrisModel implements TetrisModel, Runnable {
 					update();
 					if (piece.getPos().getRow() < 0) {
 						stopped = true;
-						queue.gameOver();
 						break;
 					}
 				}
@@ -84,7 +79,6 @@ public class ServerTetrisModel implements TetrisModel, Runnable {
 		}
 
 		if (stopped) {
-			queue.boardChanged();
 			return;
 		}
 
@@ -103,26 +97,22 @@ public class ServerTetrisModel implements TetrisModel, Runnable {
 				}
 			}
 		}
-		queue.boardChanged();
 	}
 	
 	private void accept() {
 		board.add(piece.getPiece().getShape(), piece.getPos());
+		
 		int count = 0;
-		int[] todelete = new int[board.getHeight()];
+		
 		for (int i = 0; i < board.getHeight(); i++) {
 			if (board.isRowOccupied(i)) {
 				count++;
-				todelete[count - 1] = i;
 				board.deleteRow(i);
 			}
 		}
 		if (count > 0) {
-			queue.rowsToDelete(todelete, count);
 			score += count;
-			queue.scoreChanged();
 		}
-		queue.notifyPlayerTurn(false);
 		queue.reQueue();
 	}
 
@@ -141,6 +131,11 @@ public class ServerTetrisModel implements TetrisModel, Runnable {
 	@Override
 	public synchronized boolean isStopped() {
 		return stopped;
+	}
+	
+	@Override
+	public boolean isMyTurn(String player) {
+		return queue.isMyTurn(player);
 	}
 	
 	/**
@@ -175,8 +170,6 @@ public class ServerTetrisModel implements TetrisModel, Runnable {
 	private Piece getNextPiece() {
 		Piece tmp = nextPiece;
 		nextPiece = new Piece();
-		queue.previewChanged();
-		queue.notifyPlayerTurn(true);
 		return tmp;
 	}
 
@@ -225,26 +218,12 @@ public class ServerTetrisModel implements TetrisModel, Runnable {
 	}
 
 	@Override
-	public void connect(TetrisView player) {
-		System.out.println("Recieved Player!");
-		queue.add(player);
-		System.out.println("Added Player to Queue");
-		try {
-			System.out.println("Trying to set the player's TetrisModel to us...");
-			player.setModel(this);
-		} catch (RemoteException e) {
-			e.printStackTrace();
-		}
-		System.out.println("Succeeded!");
+	public boolean connect(String player) {
+		return queue.add(player);
 	}
 
 	@Override
-	public void disconnect(TetrisView player) {
+	public void disconnect(String player) {
 		queue.remove(player);
-		try {
-			player.setModel(null);
-		} catch (RemoteException e) {
-			e.printStackTrace();
-		}
 	}
 }

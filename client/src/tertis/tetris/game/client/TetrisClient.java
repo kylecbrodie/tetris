@@ -7,7 +7,7 @@ import java.rmi.registry.Registry;
 import javax.swing.*;
 
 import tertis.tetris.game.model.TetrisModel;
-import tertis.tetris.game.view.SimpleView;
+import tertis.tetris.game.view.TetrisView;
 
 @SuppressWarnings("serial")
 public class TetrisClient extends JFrame {
@@ -27,7 +27,7 @@ public class TetrisClient extends JFrame {
 		                    null,
 		                    null, "");
 		}
-		SimpleView view = new SimpleView(20, 10, name);
+		TetrisView view = new TetrisView(20, 10, name);
 		
         try {
         	System.out.println("Connecting to registry...");
