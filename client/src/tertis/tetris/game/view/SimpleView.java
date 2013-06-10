@@ -7,7 +7,6 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.rmi.RemoteException;
 
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
@@ -21,14 +20,19 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
 import tertis.tetris.game.model.TetrisModel;
+import tertis.tetris.game.server.PlayerQueue;
 
 @SuppressWarnings("serial")
 public class SimpleView extends JPanel implements TetrisView {
 
 	private SafeModel model;
+	
+	private PlayerQueue queue;
+	
 	private GridPanel panel;
 	private GridPanel previewPanel;
 	private ScorePanel scorePanel;
+	
 	private JButton connect;
 
 	public SimpleView(int height, int width) {
@@ -77,18 +81,27 @@ public class SimpleView extends JPanel implements TetrisView {
 		this.model = new SafeModel(model);
 	}
 
+	@Override
 	public void scoreChanged() {
 		scorePanel.setScore(model.getScore());
 	}
 
+	@Override
 	public void boardChanged() {
 		panel.setModel(model.getViewBoard());
 	}
+	
+	@Override
+	public void queueChanged() {
+		queue = model.getPlayerQueue();
+	}
 
+	@Override
 	public void previewChanged() {
 		previewPanel.setModel(model.getPreviewShape());
 	}
 
+	@Override
 	public void gameOver() {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
@@ -99,6 +112,7 @@ public class SimpleView extends JPanel implements TetrisView {
 		});
 	}
 
+	@Override
 	public void rowsToDelete(final int row[], final int count) {
 		panel.blink(row, count);
 	}
@@ -109,9 +123,10 @@ public class SimpleView extends JPanel implements TetrisView {
 		final TetrisView view = this;
 		connect.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if (model == null)
+				if (model == null) {
 					return;
-				if (true /*TODO determine if the server is available (network connection, etc)*/) {
+				}
+				if (!model.isStopped()) {
 					model.connect(view);
 					connect.setText("Disconnect");
 				} else {
@@ -187,28 +202,22 @@ public class SimpleView extends JPanel implements TetrisView {
 
 	}
 
-	@Override
-	public void queueChanged() throws RemoteException {
-		//TODO downloaded new queue and display on the side
+	public void disableKeyboard() {
+		InputMap input = this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+		input.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0), null);
+		input.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), null);
+		input.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), null);
+		input.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), null);
+		input.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), null);
+		input.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), null);
 	}
 
 	@Override
-	public void yourTurn() throws RemoteException {
-		// TODO send input to server and other stuff
+	public void yourTurn(boolean isYourTurn) {
+		if (isYourTurn) {
+			setupKeyboard();
+		} else {
+			disableKeyboard();
+		}
 	}
-	
-	//TODO remove if unnecessary
-//	private void pauseOrResume() {
-//		if (model == null)
-//			return;
-//		if (model.isStopped())
-//			return;
-//		if (model.isPaused()) {
-//			model.resume();
-//			pause.setText("Pause");
-//		} else {
-//			model.pause();
-//			pause.setText("Continue");
-//		}
-//	}
 }

@@ -18,11 +18,8 @@ public class TetrisClient extends JFrame {
 		setResizable(false);
 		SimpleView view = new SimpleView(20, 10);
 		
-		if (System.getSecurityManager() == null) {
-            System.setSecurityManager(new SecurityManager());
-        }
         try {
-            Registry registry = LocateRegistry.getRegistry();
+            Registry registry = LocateRegistry.getRegistry("ec2-50-112-190-58.us-west-2.compute.amazonaws.com", 1099);
             TetrisModel m = (TetrisModel) registry.lookup("tetrisModel");
             view.setModel(m);
         } catch (Exception e) {

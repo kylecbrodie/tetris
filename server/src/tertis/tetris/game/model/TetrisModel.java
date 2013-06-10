@@ -13,6 +13,8 @@ public interface TetrisModel extends Remote {
 
 	public void disconnect(TetrisView player) throws RemoteException;
 
+	public boolean isStopped() throws RemoteException;
+	
 	public int getScore() throws RemoteException;
 
 	public IntMatrix getViewBoard() throws RemoteException;

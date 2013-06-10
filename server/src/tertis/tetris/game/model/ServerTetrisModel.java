@@ -19,10 +19,9 @@ public class ServerTetrisModel implements TetrisModel, Runnable {
 
 	private IntMatrix board;
 	private IntMatrix viewBoard;
+	
+	private PlayerQueue queue = new PlayerQueue(); 
 
-	private SafeView view;
-
-	private volatile boolean paused = false;
 	private volatile boolean stopped = true;
 
 	private volatile int score = 0;
@@ -37,14 +36,6 @@ public class ServerTetrisModel implements TetrisModel, Runnable {
 	}
 
 	/**
-	 * Set the view of this model.
-	 */
-	public void setView(TetrisView view) {
-		this.view = new SafeView(view);
-		this.view.setModel(this);
-	}
-
-	/**
 	 * Start the game.
 	 */
 	public void start() {
@@ -53,7 +44,7 @@ public class ServerTetrisModel implements TetrisModel, Runnable {
 		piece.next(getNextPiece());
 		update();
 		score = 0;
-		view.scoreChanged();
+		queue.scoreChanged();
 		Thread t = new Thread(this);
 		t.start();
 	}
@@ -64,12 +55,10 @@ public class ServerTetrisModel implements TetrisModel, Runnable {
 	 */
 	public void run() {
 		while (!stopped) {
-			maybePause();
 			try {
 				Thread.sleep(500);
 			} catch (InterruptedException e) {
 			}
-			maybePause();
 			synchronized (this) {
 				if (piece.down()) {
 					update();
@@ -79,8 +68,7 @@ public class ServerTetrisModel implements TetrisModel, Runnable {
 					update();
 					if (piece.getPos().getRow() < 0) {
 						stopped = true;
-						paused = false;
-						view.gameOver();
+						queue.gameOver();
 						break;
 					}
 				}
@@ -96,7 +84,7 @@ public class ServerTetrisModel implements TetrisModel, Runnable {
 		}
 
 		if (stopped) {
-			//view.boardChanged();
+			queue.boardChanged();
 			return;
 		}
 
@@ -115,7 +103,7 @@ public class ServerTetrisModel implements TetrisModel, Runnable {
 				}
 			}
 		}
-		view.boardChanged();
+		queue.boardChanged();
 	}
 	
 	private void accept() {
@@ -130,10 +118,12 @@ public class ServerTetrisModel implements TetrisModel, Runnable {
 			}
 		}
 		if (count > 0) {
-			view.rowsToDelete(todelete, count);
+			queue.rowsToDelete(todelete, count);
 			score += count;
-			view.scoreChanged();
+			queue.scoreChanged();
 		}
+		queue.notifyPlayerTurn(false);
+		queue.reQueue();
 	}
 
 	/**
@@ -141,62 +131,35 @@ public class ServerTetrisModel implements TetrisModel, Runnable {
 	 */
 	public synchronized void stop() {
 		stopped = true;
-		resume();
 		board.clear();
 		update();
-	}
-
-	/**
-	 * Pause the game.
-	 */
-	public synchronized void pause() {
-		paused = true;
-	}
-	
-	private synchronized void maybePause() {
-		try {
-			while (paused)
-				wait();
-		} catch (InterruptedException e) {
-		}
-	}
-
-	/**
-	 * Continue the game when paused.
-	 */
-	public synchronized void resume() {
-		paused = false;
-		notify();
 	}
 	
 	/**
 	 * Return true if the game is stopped.
 	 */
+	@Override
 	public synchronized boolean isStopped() {
 		return stopped;
-	}
-
-	/**
-	 * Return true if the game is paused.
-	 */
-	public synchronized boolean isPaused() {
-		return paused;
-	}
-	
-	private synchronized boolean isStoppedOrPaused() {
-		return stopped || paused;
 	}
 	
 	/**
 	 * Return the main board.
 	 */
+	@Override
 	public IntMatrix getViewBoard() {
 		return viewBoard;
+	}
+	
+	@Override
+	public PlayerQueue getPlayerQueue() {
+		return queue;
 	}
 
 	/**
 	 * Return current score.
 	 */
+	@Override
 	public int getScore() {
 		return score;
 	}
@@ -204,6 +167,7 @@ public class ServerTetrisModel implements TetrisModel, Runnable {
 	/**
 	 * Return the shape of the next piece.
 	 */
+	@Override
 	public IntMatrix getPreviewShape() {
 		return nextPiece.getShape();
 	}
@@ -211,15 +175,17 @@ public class ServerTetrisModel implements TetrisModel, Runnable {
 	private Piece getNextPiece() {
 		Piece tmp = nextPiece;
 		nextPiece = new Piece();
-		view.previewChanged();
+		queue.previewChanged();
+		queue.notifyPlayerTurn(true);
 		return tmp;
 	}
 
 	/**
 	 * Move the cube to left.
 	 */
+	@Override
 	public void left() {
-		if (isStoppedOrPaused())
+		if (isStopped())
 			return;
 		if (piece.left())
 			update();
@@ -228,8 +194,9 @@ public class ServerTetrisModel implements TetrisModel, Runnable {
 	/**
 	 * Move the cube to right.
 	 */
+	@Override
 	public void right() {
-		if (isStoppedOrPaused())
+		if (isStopped())
 			return;
 		if (piece.right())
 			update();
@@ -238,8 +205,9 @@ public class ServerTetrisModel implements TetrisModel, Runnable {
 	/**
 	 * Rotate the cube.
 	 */
+	@Override
 	public void rotate() {
-		if (isStoppedOrPaused())
+		if (isStopped())
 			return;
 		if (piece.rotate())
 			update();
@@ -248,8 +216,9 @@ public class ServerTetrisModel implements TetrisModel, Runnable {
 	/**
 	 * Go down the cube.
 	 */
+	@Override
 	public void down() {
-		if (isStoppedOrPaused())
+		if (isStopped())
 			return;
 		if (piece.down())
 			update();
@@ -257,17 +226,21 @@ public class ServerTetrisModel implements TetrisModel, Runnable {
 
 	@Override
 	public void connect(TetrisView player) {
-		//TODO add the player to the queue
+		queue.add(player);
+		try {
+			player.setModel(this);
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
 	public void disconnect(TetrisView player) {
-		//TODO remove the player from queue
-	}
-
-	@Override
-	public PlayerQueue getPlayerQueue() throws RemoteException {
-		//TODO return the player queue
-		return null;
+		queue.remove(player);
+		try {
+			player.setModel(null);
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
 	}
 }

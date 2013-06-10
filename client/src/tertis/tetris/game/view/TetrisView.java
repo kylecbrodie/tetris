@@ -39,7 +39,7 @@ public interface TetrisView extends Remote {
 	/**
 	 * Notify the view that they are the primary player
 	 */
-	void yourTurn() throws RemoteException;
+	void yourTurn(boolean isYourTurn) throws RemoteException;
 
 	/**
 	 * Notify the view that there are rows will be deleted in the map.

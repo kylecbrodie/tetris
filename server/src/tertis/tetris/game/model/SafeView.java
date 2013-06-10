@@ -58,9 +58,9 @@ public class SafeView implements TetrisView {
 	}
 
 	@Override
-	public void yourTurn() {
+	public void yourTurn(boolean isYourTurn) {
 		try {
-			proxy.yourTurn();
+			proxy.yourTurn(isYourTurn);
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}

@@ -33,6 +33,16 @@ public class SafeModel implements TetrisModel {
 	}
 
 	@Override
+	public boolean isStopped() {
+		try {
+			return proxy.isStopped();
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
+		return true;
+	}
+
+	@Override
 	public int getScore() {
 		try {
 			return proxy.getScore();
