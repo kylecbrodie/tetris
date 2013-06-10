@@ -20,7 +20,10 @@ public class PlayerQueue extends ArrayDeque<String> {
 	}
 	
 	public boolean reQueue() {
-		return add(removeFirst());
+		if(pollFirst() != null) {
+			return add(removeFirst());
+		}
+		return false;
 	}
 	
 	public boolean hasCurrentPlayer() {

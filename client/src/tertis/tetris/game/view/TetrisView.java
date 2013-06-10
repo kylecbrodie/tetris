@@ -33,6 +33,7 @@ public class TetrisView extends JPanel implements Runnable {
 	private ScorePanel scorePanel;
 	private QueuePanel queuePanel;
 	private JButton connect;
+	private boolean connected = false;
 	private String name;
 
 	public TetrisView(int height, int width, String s) {
@@ -86,16 +87,12 @@ public class TetrisView extends JPanel implements Runnable {
 	public void run() {
 		while(true) {
 			if(model != null) {
-				scoreChanged();
-				boardChanged();
-				queueChanged();
-				previewChanged();
 				try {
-					if(model.isMyTurn(name)) {
-						ourTurn(true);
-					}
 					if(model.isStopped()) {
 						gameOver();
+					}
+					if(model.isMyTurn(name)) {
+						ourTurn(true);
 					}
 				} catch (RemoteException e1) {
 					e1.printStackTrace();
@@ -105,6 +102,10 @@ public class TetrisView extends JPanel implements Runnable {
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
+				boardChanged();
+				queueChanged();
+				previewChanged();
+				scoreChanged();
 			}
 		}
 	}
@@ -176,9 +177,8 @@ public class TetrisView extends JPanel implements Runnable {
 					return;
 				}
 				try {
-					if (!model.isStopped()) {
-						System.out.println("Server not stopped!");
-						boolean unique = model.connect(name);
+					if (!connected) {
+						connected = model.connect(name);
 						//TODO notify the player their name isn't unique
 						connect.setText("Disconnect");
 					} else {
