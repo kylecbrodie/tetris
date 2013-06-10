@@ -20,14 +20,14 @@ public class PlayerQueue extends ArrayDeque<String> {
 	}
 	
 	public boolean reQueue() {
-		if(pollFirst() != null) {
+		if(peekFirst() != null) {
 			return add(removeFirst());
 		}
 		return false;
 	}
 	
 	public boolean hasCurrentPlayer() {
-		return pollFirst() != null;
+		return peekFirst() != null;
 	}
 	
 	public String getCurrentPlayer() {
@@ -35,7 +35,7 @@ public class PlayerQueue extends ArrayDeque<String> {
 	}
 
 	public boolean isMyTurn(String player) {
-		String first = pollFirst();
+		String first = peekFirst();
 			return first != null && first == player;
 	}
 }

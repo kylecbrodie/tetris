@@ -92,19 +92,16 @@ public class TetrisView extends JPanel implements Runnable {
 						gameOver();
 						return;
 					}
-				} catch (RemoteException e1) {
-					e1.printStackTrace();
+					ourTurn(model.isMyTurn(name));
+				} catch (RemoteException e) {
+					e.printStackTrace();
 				}
-				ourTurn(true);
+				
+				
 				boardChanged();
 				queueChanged();
 				previewChanged();
 				scoreChanged();
-				try {
-					Thread.sleep(16);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
 			}
 		}
 	}
