@@ -36,8 +36,7 @@ public class TetrisView extends JPanel implements Runnable {
 	private boolean connected = false;
 	private String name;
 
-	public TetrisView(int height, int width, String s) {
-		name = s;
+	public TetrisView(int height, int width) {
 		panel = new GridPanel(height, width, true, Color.WHITE);
 		previewPanel = new GridPanel(4, 4, false, Color.BLACK);
 
@@ -92,12 +91,12 @@ public class TetrisView extends JPanel implements Runnable {
 						gameOver();
 						return;
 					}
-					ourTurn(model.isMyTurn(name));
+					
 				} catch (RemoteException e) {
 					e.printStackTrace();
 				}
 				
-				
+				ourTurn(true);
 				boardChanged();
 				queueChanged();
 				previewChanged();
@@ -110,8 +109,8 @@ public class TetrisView extends JPanel implements Runnable {
 		this.model = model;
 	}
 
-	public String getName() {
-		return name;
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public void scoreChanged() {
@@ -151,8 +150,7 @@ public class TetrisView extends JPanel implements Runnable {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					JOptionPane.showMessageDialog(TetrisView.this, "GAME OVER.\nGobal score is " + model.getScore() + ".\nCoordination Failed.", "GAME OVER",
-							JOptionPane.INFORMATION_MESSAGE);
+					JOptionPane.showMessageDialog(TetrisView.this, "GAME OVER.\nGobal lines cleared: " + model.getScore() + "\nGlobal Coordination Failed.", "GAME OVER", JOptionPane.INFORMATION_MESSAGE);
 				} catch (HeadlessException e) {
 					e.printStackTrace();
 				} catch (RemoteException e) {

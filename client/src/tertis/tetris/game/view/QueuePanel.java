@@ -1,7 +1,7 @@
 package tertis.tetris.game.view;
 
-import javax.swing.BoxLayout;
-import javax.swing.JLabel;
+import java.awt.Graphics;
+
 import javax.swing.JPanel;
 
 import tertis.tetris.game.server.PlayerQueue;
@@ -16,13 +16,15 @@ public class QueuePanel extends JPanel {
 		queue = q;
 	}
 
-	public void repaint(PlayerQueue q) {
-		this.removeAll();
-		this.updateUI();
-		this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-
+	public void paintComponent(Graphics g) {
+		super.paintComponent(g);
+		
+		if(queue == null) return;
+		
+		int y = getY();
 		for (String s : queue) {
-			this.add(new JLabel(s));
+			g.drawString(s, getX(), y);
+			y += 20;
 		}
 	}
 }

@@ -39,6 +39,7 @@ public class ServerTetrisModel implements TetrisModel, Runnable {
 	 */
 	public void start() {
 		stopped = false;
+		paused = true;
 		board.clear();
 		piece.next(getNextPiece());
 		update();
@@ -77,6 +78,7 @@ public class ServerTetrisModel implements TetrisModel, Runnable {
 				}
 			}
 		}
+		System.out.println("exiting run...");
 	}
 
 	private void update() {
@@ -174,6 +176,11 @@ public class ServerTetrisModel implements TetrisModel, Runnable {
 	
 	private synchronized boolean isStoppedOrPaused() {
 		return stopped || paused;
+	}
+	
+	@Override
+	public boolean isNameAvailable(String name) {
+		return !queue.contains(name);
 	}
 	
 	@Override

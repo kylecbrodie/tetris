@@ -16,38 +16,43 @@ public class TetrisClient extends JFrame {
 		super(title);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setResizable(false);
-		String name = "";
-		while(name.equals(""))
-		{
-			name = (String)JOptionPane.showInputDialog(
-		                    new JPanel(),
-		                    "",
-		                    "Your Name:",
-		                    JOptionPane.PLAIN_MESSAGE,
-		                    null,
-		                    null, "");
-		}
-		TetrisView view = new TetrisView(20, 10, name);
 		
-        try {
-        	System.out.println("Connecting to registry...");
+		TetrisView view = new TetrisView(20, 10);
+		
+		try {
+        	System.out.println("Connecting to server...");
             Registry registry = LocateRegistry.getRegistry("ec2-50-112-190-58.us-west-2.compute.amazonaws.com", 1099);
             System.out.println("Getting tetris model...");
             TetrisModel m = (TetrisModel) registry.lookup("tetrisModel");
+        
+            //Set name
+            String name = "";
+            while(name == "") {
+            	
+            	name = (String)JOptionPane.showInputDialog("Enter Your Name Mortal:");
+            	if(name == "") continue;
+            	
+            	if(!m.isNameAvailable(name)) {
+            		JOptionPane.showMessageDialog(null, "That name is taken peasant.");
+            		name = "";
+            	}
+            }
+            view.setName(name);
+            
             System.out.println("Setting tetris model in view...");
             view.setModel(m);
-            System.out.println("Done!");
-        } catch (Exception e) {
+		} catch (Exception e) {
             System.err.println("TetrisClient exception:");
             e.printStackTrace();
         }
+		System.out.println("Done!");
 		
 		getContentPane().add(view, BorderLayout.CENTER);
 		view.start();
 	}
 
 	public static void main(String[] args) {
-		TetrisClient app = new TetrisClient("Tetris");
+		TetrisClient app = new TetrisClient("TETRIS AGAINST HUMANITY");
 		app.pack();
 		// center the window
 		Dimension dm = app.getToolkit().getScreenSize();

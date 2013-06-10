@@ -14,6 +14,8 @@ public interface TetrisModel extends Remote {
 
 	public boolean isStopped() throws RemoteException;
 	
+	public boolean isNameAvailable(String name) throws RemoteException;
+	
 	public boolean isMyTurn(String player) throws RemoteException;
 	
 	public int getScore() throws RemoteException;
