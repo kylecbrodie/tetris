@@ -7,6 +7,7 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.rmi.RemoteException;
 
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
@@ -24,7 +25,7 @@ import tertis.tetris.game.model.TetrisModel;
 @SuppressWarnings("serial")
 public class SimpleView extends JPanel implements TetrisView {
 
-	private TetrisModel model;
+	private SafeModel model;
 	private GridPanel panel;
 	private GridPanel previewPanel;
 	private ScorePanel scorePanel;
@@ -43,8 +44,7 @@ public class SimpleView extends JPanel implements TetrisView {
 		JPanel control = new JPanel();
 		control.setLayout(new GridLayout(2, 1, 1, 10));
 
-		control.add(createStartButton());
-		control.add(createPauseButton());
+		control.add(createConnectButton());
 
 		JPanel box = new JPanel();
 		box.setLayout(new BoxLayout(box, BoxLayout.Y_AXIS));
@@ -74,8 +74,7 @@ public class SimpleView extends JPanel implements TetrisView {
 
 	@Override
 	public void setModel(TetrisModel model) {
-		this.model = model;
-		model.start();
+		this.model = new SafeModel(model);
 	}
 
 	public void scoreChanged() {
@@ -105,35 +104,25 @@ public class SimpleView extends JPanel implements TetrisView {
 		panel.blink(row, count);
 	}
 
-	private JButton createStartButton() {
-		start = new JButton("Stop");
+	private JButton createConnectButton() {
+		start = new JButton("Connect");
 		start.setPreferredSize(new Dimension(90, 30));
+		final TetrisView view = this;
 		start.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (model == null)
 					return;
-				if (model.isStopped()) {
-					model.start();
-					start.setText("Stop");
+				if (true /*TODO determine if the server is available (network connection, etc)*/) {
+					model.connect(view);
+					start.setText("Disconnect");
 				} else {
-					model.stop();
-					start.setText("Start");
+					model.disconnect(view);
+					start.setText("Connect");
 				}
 				pause.setText("Pause");
 			}
 		});
 		return start;
-	}
-
-	private JButton createPauseButton() {
-		pause = new JButton("Pause");
-		pause.setPreferredSize(new Dimension(90, 30));
-		pause.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				pauseOrResume();
-			}
-		});
-		return pause;
 	}
 
 	private void setupKeyboard() {
@@ -205,17 +194,28 @@ public class SimpleView extends JPanel implements TetrisView {
 
 	}
 
-	private void pauseOrResume() {
-		if (model == null)
-			return;
-		if (model.isStopped())
-			return;
-		if (model.isPaused()) {
-			model.resume();
-			pause.setText("Pause");
-		} else {
-			model.pause();
-			pause.setText("Continue");
-		}
+	@Override
+	public void queueChanged() throws RemoteException {
+		//TODO downloaded new queue and display on the side
 	}
+
+	@Override
+	public void yourTurn() throws RemoteException {
+		// TODO send input to server and other stuff
+	}
+	
+	//TODO remove if unnecessary
+//	private void pauseOrResume() {
+//		if (model == null)
+//			return;
+//		if (model.isStopped())
+//			return;
+//		if (model.isPaused()) {
+//			model.resume();
+//			pause.setText("Pause");
+//		} else {
+//			model.pause();
+//			pause.setText("Continue");
+//		}
+//	}
 }

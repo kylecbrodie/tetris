@@ -1,15 +1,18 @@
 package tertis.tetris.game.model;
 
+import java.rmi.RemoteException;
+
 import tertis.tetris.game.board.IntMatrix;
 import tertis.tetris.game.board.Position;
 import tertis.tetris.game.board.piece.ActivePiece;
 import tertis.tetris.game.board.piece.Piece;
+import tertis.tetris.game.server.PlayerQueue;
 import tertis.tetris.game.view.TetrisView;
 
 /**
  * The model of the Tetris game. It's the MODEL of the M-VC pattern.
  */
-public class TetrisModel implements Runnable {
+public class ServerTetrisModel implements TetrisModel, Runnable {
 
 	private Piece nextPiece = new Piece();
 	private ActivePiece piece;
@@ -17,7 +20,7 @@ public class TetrisModel implements Runnable {
 	private IntMatrix board;
 	private IntMatrix viewBoard;
 
-	private TetrisView view;
+	private SafeView view;
 
 	private volatile boolean paused = false;
 	private volatile boolean stopped = true;
@@ -27,7 +30,7 @@ public class TetrisModel implements Runnable {
 	/**
 	 * Constructor
 	 */
-	public TetrisModel(int height, int width) {
+	public ServerTetrisModel(int height, int width) {
 		board = new IntMatrix(height, width);
 		viewBoard = new IntMatrix(height, width);
 		piece = new ActivePiece(board);
@@ -37,8 +40,8 @@ public class TetrisModel implements Runnable {
 	 * Set the view of this model.
 	 */
 	public void setView(TetrisView view) {
-		this.view = view;
-		view.setModel(this);
+		this.view = new SafeView(view);
+		this.view.setModel(this);
 	}
 
 	/**
@@ -250,5 +253,21 @@ public class TetrisModel implements Runnable {
 			return;
 		if (piece.down())
 			update();
+	}
+
+	@Override
+	public void connect(TetrisView player) {
+		//TODO add the player to the queue
+	}
+
+	@Override
+	public void disconnect(TetrisView player) {
+		//TODO remove the player from queue
+	}
+
+	@Override
+	public PlayerQueue getPlayerQueue() throws RemoteException {
+		//TODO return the player queue
+		return null;
 	}
 }
