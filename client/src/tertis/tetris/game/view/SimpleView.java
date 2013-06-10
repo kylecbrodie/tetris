@@ -32,14 +32,18 @@ public class SimpleView extends JPanel implements TetrisView {
 	private GridPanel panel;
 	private GridPanel previewPanel;
 	private ScorePanel scorePanel;
-	
+	private QueuePanel queuePanel;
 	private JButton connect;
+	private String name;
 
-	public SimpleView(int height, int width) {
+	public SimpleView(int height, int width, String s) {
+		name = s;
 		panel = new GridPanel(height, width, true, Color.WHITE);
 		previewPanel = new GridPanel(4, 4, false, Color.BLACK);
 
 		scorePanel = new ScorePanel();
+		
+		queuePanel = new QueuePanel();
 
 		this.setLayout(new BorderLayout());
 
@@ -57,6 +61,7 @@ public class SimpleView extends JPanel implements TetrisView {
 		JPanel preview = new JPanel();
 		previewPanel.setPreferredSize(new Dimension(90, 90));
 		preview.add(previewPanel);
+		box.add(queuePanel);
 
 		JPanel box2 = new JPanel();
 		box2.setLayout(new BoxLayout(box2, BoxLayout.Y_AXIS));
@@ -93,7 +98,7 @@ public class SimpleView extends JPanel implements TetrisView {
 	
 	@Override
 	public void queueChanged() {
-		queue = model.getPlayerQueue();
+		queuePanel.repaint(model.getPlayerQueue());
 	}
 
 	@Override
@@ -219,5 +224,9 @@ public class SimpleView extends JPanel implements TetrisView {
 		} else {
 			disableKeyboard();
 		}
+	}
+
+	public String getName() {
+		return name;
 	}
 }

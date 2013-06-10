@@ -50,4 +50,9 @@ public interface TetrisView extends Remote {
 	 * Notify the view that the game is over.
 	 */
 	void gameOver() throws RemoteException;
+	
+	/**
+	 * gets users name
+	 */
+	String getName() throws RemoteException;
 }

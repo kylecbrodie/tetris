@@ -83,4 +83,10 @@ public class SafeView implements TetrisView {
 			e.printStackTrace();
 		}
 	}
+
+	@Override
+	public String getName() throws RemoteException {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

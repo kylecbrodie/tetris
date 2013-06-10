@@ -16,7 +16,18 @@ public class TetrisClient extends JFrame {
 		super(title);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setResizable(false);
-		SimpleView view = new SimpleView(20, 10);
+		String name = "";
+		while(name.equals(""))
+		{
+			name = (String)JOptionPane.showInputDialog(
+		                    new JPanel(),
+		                    "",
+		                    "Your Name:",
+		                    JOptionPane.PLAIN_MESSAGE,
+		                    null,
+		                    null, "");
+		}
+		SimpleView view = new SimpleView(20, 10, name);
 		
         try {
             Registry registry = LocateRegistry.getRegistry("ec2-50-112-190-58.us-west-2.compute.amazonaws.com", 1099);
