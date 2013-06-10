@@ -1,13 +1,16 @@
 package tertis.tetris.game.board;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
 /**
  * A two dimensional integer array wrapper class. For our uses, 0 represents
  * unoccupied and all other values represent occupied.
  */
-public final class IntMatrix implements Cloneable {
+public final class IntMatrix implements Cloneable, Serializable {
 
+	private static final long serialVersionUID = -183330540222888795L;
+	
 	public final int height;
 	public final int width;
 	private final int data[][];

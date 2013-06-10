@@ -1,9 +1,13 @@
 package tertis.tetris.game.board;
 
+import java.io.Serializable;
+
 /**
  * A helper class to hold a position in an IntMatrix.
  */
-public class Position implements Cloneable, Comparable<Position> {
+public class Position implements Cloneable, Comparable<Position>, Serializable {
+
+	private static final long serialVersionUID = -6650442889878721213L;
 
 	public int row;
 	public int col;

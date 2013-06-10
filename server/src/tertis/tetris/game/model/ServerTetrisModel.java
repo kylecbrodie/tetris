@@ -226,12 +226,16 @@ public class ServerTetrisModel implements TetrisModel, Runnable {
 
 	@Override
 	public void connect(TetrisView player) {
+		System.out.println("Recieved Player!");
 		queue.add(player);
+		System.out.println("Added Player to Queue");
 		try {
+			System.out.println("Trying to set the player's TetrisModel to us...");
 			player.setModel(this);
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
+		System.out.println("Succeeded!");
 	}
 
 	@Override

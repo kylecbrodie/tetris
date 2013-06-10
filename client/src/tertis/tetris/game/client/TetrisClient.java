@@ -30,15 +30,20 @@ public class TetrisClient extends JFrame {
 		SimpleView view = new SimpleView(20, 10, name);
 		
         try {
+        	System.out.println("Connecting to registry...");
             Registry registry = LocateRegistry.getRegistry("ec2-50-112-190-58.us-west-2.compute.amazonaws.com", 1099);
+            System.out.println("Getting tetris model...");
             TetrisModel m = (TetrisModel) registry.lookup("tetrisModel");
+            System.out.println("Setting tetris model in view...");
             view.setModel(m);
+            System.out.println("Done!");
         } catch (Exception e) {
             System.err.println("TetrisClient exception:");
             e.printStackTrace();
         }
 		
 		getContentPane().add(view, BorderLayout.CENTER);
+		view.start();
 	}
 
 	public static void main(String[] args) {

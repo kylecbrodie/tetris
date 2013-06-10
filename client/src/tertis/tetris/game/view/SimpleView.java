@@ -4,9 +4,12 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
@@ -20,14 +23,11 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
 import tertis.tetris.game.model.TetrisModel;
-import tertis.tetris.game.server.PlayerQueue;
 
 @SuppressWarnings("serial")
-public class SimpleView extends JPanel implements TetrisView {
+public class SimpleView extends JPanel implements TetrisView, Runnable {
 
-	private SafeModel model;
-	
-	private PlayerQueue queue;
+	private TetrisModel model;
 	
 	private GridPanel panel;
 	private GridPanel previewPanel;
@@ -77,41 +77,82 @@ public class SimpleView extends JPanel implements TetrisView {
 		all.add(box2, BorderLayout.SOUTH);
 
 		this.add(all, BorderLayout.EAST);
-
-		setupKeyboard();
 	}
 
+	public void start() {
+		Thread t = new Thread(this);
+		t.start();
+	}
+	
+	public void run() {
+		while(true) {
+			if(model != null) {
+				scoreChanged();
+				boardChanged();
+				queueChanged();
+				previewChanged();
+				try {
+					Thread.sleep(16);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
 	@Override
 	public void setModel(TetrisModel model) {
-		this.model = new SafeModel(model);
+		this.model = model;
 	}
 
 	@Override
 	public void scoreChanged() {
-		scorePanel.setScore(model.getScore());
+		try {
+			scorePanel.setScore(model.getScore());
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
 	public void boardChanged() {
-		panel.setModel(model.getViewBoard());
+		try {
+			panel.setModel(model.getViewBoard());
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	@Override
 	public void queueChanged() {
-		queuePanel.repaint(model.getPlayerQueue());
+		try {
+			queuePanel.repaint(model.getPlayerQueue()); //TODO make better
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
 	public void previewChanged() {
-		previewPanel.setModel(model.getPreviewShape());
+		try {
+			previewPanel.setModel(model.getPreviewShape());
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
 	public void gameOver() {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				JOptionPane.showMessageDialog(SimpleView.this, "GAME OVER.\nYour score is " + model.getScore() + ".", "GAME OVER",
-						JOptionPane.INFORMATION_MESSAGE);
+				try {
+					JOptionPane.showMessageDialog(SimpleView.this, "GAME OVER.\nYour score is " + model.getScore() + ".", "GAME OVER",
+							JOptionPane.INFORMATION_MESSAGE);
+				} catch (HeadlessException e) {
+					e.printStackTrace();
+				} catch (RemoteException e) {
+					e.printStackTrace();
+				}
 				connect.setText("Connect");
 			}
 		});
@@ -125,18 +166,32 @@ public class SimpleView extends JPanel implements TetrisView {
 	private JButton createConnectButton() {
 		connect = new JButton("Connect");
 		connect.setPreferredSize(new Dimension(90, 30));
-		final TetrisView view = this;
+		
+		//Convoluted way to have bi-directional communication
+		TetrisView tmp = null;
+		try {
+			tmp = (TetrisView) UnicastRemoteObject.exportObject(this, 8080);
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
+		
+		final TetrisView view = tmp;
 		connect.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (model == null) {
 					return;
 				}
-				if (!model.isStopped()) {
-					model.connect(view);
-					connect.setText("Disconnect");
-				} else {
-					model.disconnect(view);
-					connect.setText("Connect");
+				try {
+					if (!model.isStopped()) {
+						System.out.println("Server not stopped!");
+						model.connect(view);
+						connect.setText("Disconnect");
+					} else {
+						model.disconnect(view);
+						connect.setText("Connect");
+					}
+				} catch (RemoteException e1) {
+					e1.printStackTrace();
 				}
 			}
 		});
@@ -156,7 +211,11 @@ public class SimpleView extends JPanel implements TetrisView {
 			public void actionPerformed(ActionEvent e) {
 				if (model == null)
 					return;
-				model.left();
+				try {
+					model.left();
+				} catch (RemoteException e1) {
+					e1.printStackTrace();
+				}
 			}
 		});
 
@@ -164,47 +223,62 @@ public class SimpleView extends JPanel implements TetrisView {
 			public void actionPerformed(ActionEvent e) {
 				if (model == null)
 					return;
-				model.right();
+				try {
+					model.right();
+				} catch (RemoteException e1) {
+					e1.printStackTrace();
+				}
 			}
 		});
 		action.put("up", new AbstractAction() {
 			public void actionPerformed(ActionEvent e) {
 				if (model == null)
 					return;
-				model.rotate();
+				try {
+					model.rotate();
+				} catch (RemoteException e1) {
+					e1.printStackTrace();
+				}
 			}
 		});
 		action.put("down", new AbstractAction() {
 			public void actionPerformed(ActionEvent e) {
 				if (model == null)
 					return;
-				model.down();
+				try {
+					model.down();
+				} catch (RemoteException e1) {
+					e1.printStackTrace();
+				}
 			}
 		});
 		action.put("space", new AbstractAction() {
 			public void actionPerformed(ActionEvent e) {
-				if (model == null)
+				if (model == null) {
 					return;
-				model.down();
-				model.down();
-				model.down();
-				model.down();
-				model.down();
-				model.down();
-				model.down();
-				model.down();
-				model.down();
-				model.down();
-				model.down();
-				model.down();
-				model.down();
-				model.down();
-				model.down();
-				model.down();
+				}
+				try {
+					model.down();
+					model.down();
+					model.down();
+					model.down();
+					model.down();
+					model.down();
+					model.down();
+					model.down();
+					model.down();
+					model.down();
+					model.down();
+					model.down();
+					model.down();
+					model.down();
+					model.down();
+					model.down();
+				} catch (RemoteException e1) {
+					e1.printStackTrace();
+				}
 			}
-
 		});
-
 	}
 
 	public void disableKeyboard() {
