@@ -90,22 +90,21 @@ public class TetrisView extends JPanel implements Runnable {
 				try {
 					if(model.isStopped()) {
 						gameOver();
-					}
-					if(model.isMyTurn(name)) {
-						ourTurn(true);
+						return;
 					}
 				} catch (RemoteException e1) {
 					e1.printStackTrace();
 				}
+				ourTurn(true);
+				boardChanged();
+				queueChanged();
+				previewChanged();
+				scoreChanged();
 				try {
 					Thread.sleep(16);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
-				boardChanged();
-				queueChanged();
-				previewChanged();
-				scoreChanged();
 			}
 		}
 	}
@@ -155,7 +154,7 @@ public class TetrisView extends JPanel implements Runnable {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					JOptionPane.showMessageDialog(TetrisView.this, "GAME OVER.\nYour score is " + model.getScore() + ".", "GAME OVER",
+					JOptionPane.showMessageDialog(TetrisView.this, "GAME OVER.\nGobal score is " + model.getScore() + ".\nCoordination Failed.", "GAME OVER",
 							JOptionPane.INFORMATION_MESSAGE);
 				} catch (HeadlessException e) {
 					e.printStackTrace();
@@ -184,6 +183,7 @@ public class TetrisView extends JPanel implements Runnable {
 					} else {
 						model.disconnect(name);
 						connect.setText("Connect");
+						connected = false;
 					}
 				} catch (RemoteException e1) {
 					e1.printStackTrace();

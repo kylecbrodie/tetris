@@ -221,6 +221,7 @@ public class ServerTetrisModel implements TetrisModel, Runnable {
 	 */
 	@Override
 	public void left() {
+		System.out.println("Recieved Left!");
 		if (isStoppedOrPaused())
 			return;
 		if (piece.left())
@@ -232,6 +233,7 @@ public class ServerTetrisModel implements TetrisModel, Runnable {
 	 */
 	@Override
 	public void right() {
+		System.out.println("Recieved Right!");
 		if (isStoppedOrPaused())
 			return;
 		if (piece.right())
@@ -243,6 +245,7 @@ public class ServerTetrisModel implements TetrisModel, Runnable {
 	 */
 	@Override
 	public void rotate() {
+		System.out.println("Recieved Rotate!");
 		if (isStoppedOrPaused())
 			return;
 		if (piece.rotate())
@@ -254,6 +257,7 @@ public class ServerTetrisModel implements TetrisModel, Runnable {
 	 */
 	@Override
 	public void down() {
+		System.out.println("Recieved Down!");
 		if (isStoppedOrPaused())
 			return;
 		if (piece.down())
