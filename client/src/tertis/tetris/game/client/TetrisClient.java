@@ -1,8 +1,12 @@
 package tertis.tetris.game.client;
 
 import java.awt.*;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+
 import javax.swing.*;
 
+import tertis.tetris.game.model.TetrisModel;
 import tertis.tetris.game.view.SimpleView;
 
 @SuppressWarnings("serial")
@@ -14,12 +18,17 @@ public class TetrisClient extends JFrame {
 		setResizable(false);
 		SimpleView view = new SimpleView(20, 10);
 		
-		//TODO download the tetris model from the server here;
-		
-		//<old code>
-		//TetrisModel model = new TetrisModel(20, 10);
-		//model.setView(view);
-		//</old code>
+		if (System.getSecurityManager() == null) {
+            System.setSecurityManager(new SecurityManager());
+        }
+        try {
+            Registry registry = LocateRegistry.getRegistry();
+            TetrisModel m = (TetrisModel) registry.lookup("tetrisModel");
+            view.setModel(m);
+        } catch (Exception e) {
+            System.err.println("TetrisClient exception:");
+            e.printStackTrace();
+        }
 		
 		getContentPane().add(view, BorderLayout.CENTER);
 	}

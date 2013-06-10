@@ -29,7 +29,7 @@ public class SimpleView extends JPanel implements TetrisView {
 	private GridPanel panel;
 	private GridPanel previewPanel;
 	private ScorePanel scorePanel;
-	private JButton start, pause;
+	private JButton connect;
 
 	public SimpleView(int height, int width) {
 		panel = new GridPanel(height, width, true, Color.WHITE);
@@ -94,8 +94,7 @@ public class SimpleView extends JPanel implements TetrisView {
 			public void run() {
 				JOptionPane.showMessageDialog(SimpleView.this, "GAME OVER.\nYour score is " + model.getScore() + ".", "GAME OVER",
 						JOptionPane.INFORMATION_MESSAGE);
-				start.setText("Start");
-				pause.setText("Pause");
+				connect.setText("Connect");
 			}
 		});
 	}
@@ -105,24 +104,23 @@ public class SimpleView extends JPanel implements TetrisView {
 	}
 
 	private JButton createConnectButton() {
-		start = new JButton("Connect");
-		start.setPreferredSize(new Dimension(90, 30));
+		connect = new JButton("Connect");
+		connect.setPreferredSize(new Dimension(90, 30));
 		final TetrisView view = this;
-		start.addActionListener(new ActionListener() {
+		connect.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (model == null)
 					return;
 				if (true /*TODO determine if the server is available (network connection, etc)*/) {
 					model.connect(view);
-					start.setText("Disconnect");
+					connect.setText("Disconnect");
 				} else {
 					model.disconnect(view);
-					start.setText("Connect");
+					connect.setText("Connect");
 				}
-				pause.setText("Pause");
 			}
 		});
-		return start;
+		return connect;
 	}
 
 	private void setupKeyboard() {
@@ -161,11 +159,6 @@ public class SimpleView extends JPanel implements TetrisView {
 				if (model == null)
 					return;
 				model.down();
-			}
-		});
-		action.put("escape", new AbstractAction() {
-			public void actionPerformed(ActionEvent e) {
-				pause.doClick();
 			}
 		});
 		action.put("space", new AbstractAction() {

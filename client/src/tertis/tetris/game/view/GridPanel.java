@@ -14,12 +14,17 @@ import tertis.tetris.game.board.IntMatrix;
 @SuppressWarnings("serial")
 public class GridPanel extends JPanel {
 
+	private final int width;
+	private final int height;
 	private Grid[][] grids;
 
-	public GridPanel(int rols, int cols, boolean hasBorder, Color borderColor) {
-		setLayout(new GridLayout(rols, cols));
-		grids = new Grid[rols][cols];
-		for (int i = 0; i < rols; i++) {
+	public GridPanel(int rows, int cols, boolean hasBorder, Color borderColor) {
+		width = cols;
+		height = rows;
+		
+		setLayout(new GridLayout(rows, cols));
+		grids = new Grid[rows][cols];
+		for (int i = 0; i < rows; i++) {
 			for (int j = 0; j < cols; j++) {
 				grids[i][j] = new Grid(hasBorder, borderColor);
 				add(grids[i][j]);
@@ -38,24 +43,27 @@ public class GridPanel extends JPanel {
 	public void setModel(IntMatrix model) {
 		reset();
 		int colBegin = 0;
-		if (model.getWidth() < getCols()) {
-			colBegin = (getCols() - model.getWidth()) / 2;
+		if (model.width < width) {
+			colBegin = (width - model.width) / 2;
 		}
 		int rowBegin = 0;
-		if (model.getHeight() < getRows()) {
-			rowBegin = (getRows() - model.getHeight()) / 2;
+		if (model.height < height) {
+			rowBegin = (height - model.height) / 2;
 		}
-		for (int i = 0; i < model.getHeight(); i++)
-			for (int j = 0; j < model.getWidth(); j++) {
+		for (int i = 0; i < model.height; i++) {
+			for (int j = 0; j < model.width; j++) {
 				grids[i + rowBegin][j + colBegin].set(model.get(i, j));
 			}
+		}
 		repaint();
 	}
 
 	public void reset() {
-		for (int i = 0; i < getRows(); i++)
-			for (int j = 0; j < getCols(); j++)
+		for (int i = 0; i < height; i++) {
+			for (int j = 0; j < width; j++) {
 				grids[i][j].set(0);
+			}
+		}
 	}
 
 	public void blink(int row[], int count) {
@@ -64,23 +72,9 @@ public class GridPanel extends JPanel {
 			repaint();
 			Thread.sleep(150);
 			setRowsColor(row, count, Color.GRAY);
-			// repaint();
-			// Thread.sleep(50);
-			// setRowsColor(row, 1, Color.YELLOW);
-			// repaint();
-			// Thread.sleep(50);
-			// setRowsColor(row, 1, Color.GREEN);
-			// repaint();
-			// Thread.sleep(50);
-			// setRowsColor(row, 1, Color.CYAN);
-			// repaint();
-			// Thread.sleep(50);
-			// setRowsColor(row, 1, Color.BLUE);
-			// repaint();
-			// Thread.sleep(50);
-			// setRowsColor(row, 1, Color.MAGENTA);
 			repaint();
 		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -107,10 +101,11 @@ public class GridPanel extends JPanel {
 			int h = this.getHeight();
 
 			g.setColor(color);
-			if (on > 0)
+			if (on > 0) {
 				g.fillRect(0, 0, w, h);
-			else
+			} else {
 				g.clearRect(0, 0, w, h);
+			}
 		}
 
 		public Dimension getPreferredSize() {

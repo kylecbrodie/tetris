@@ -1,0 +1,3 @@
+grant codeBase "file:~/prog/workspace_Java/tetris/client/src" {
+    permission java.security.AllPermission;
+};
