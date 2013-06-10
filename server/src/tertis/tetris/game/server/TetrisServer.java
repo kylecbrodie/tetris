@@ -19,7 +19,7 @@ public class TetrisServer {
             LocateRegistry.createRegistry(1099);
             
             Naming.rebind("//ec2-50-112-190-58.us-west-2.compute.amazonaws.com/" + name, stub);
-            
+            ((ServerTetrisModel) model).start();
             System.out.println("Server Online!");
         } catch (Exception e) {
             System.err.println("TetrisServer exception:");

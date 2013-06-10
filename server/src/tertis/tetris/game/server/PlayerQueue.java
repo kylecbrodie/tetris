@@ -22,6 +22,14 @@ public class PlayerQueue extends ArrayDeque<String> {
 	public boolean reQueue() {
 		return add(removeFirst());
 	}
+	
+	public boolean hasCurrentPlayer() {
+		return pollFirst() != null;
+	}
+	
+	public String getCurrentPlayer() {
+		return peekFirst();
+	}
 
 	public boolean isMyTurn(String player) {
 		String first = pollFirst();

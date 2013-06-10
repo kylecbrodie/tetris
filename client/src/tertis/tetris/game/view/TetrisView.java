@@ -94,6 +94,9 @@ public class TetrisView extends JPanel implements Runnable {
 					if(model.isMyTurn(name)) {
 						ourTurn(true);
 					}
+					if(model.isStopped()) {
+						gameOver();
+					}
 				} catch (RemoteException e1) {
 					e1.printStackTrace();
 				}

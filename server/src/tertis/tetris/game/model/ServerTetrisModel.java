@@ -13,12 +13,14 @@ public class ServerTetrisModel implements TetrisModel, Runnable {
 
 	private Piece nextPiece = new Piece();
 	private ActivePiece piece;
+	private String currentPlayer;
 
 	private IntMatrix board;
 	private IntMatrix viewBoard;
 	
 	private PlayerQueue queue = new PlayerQueue(); 
 
+	private volatile boolean paused = false;
 	private volatile boolean stopped = true;
 
 	private volatile int score = 0;
@@ -51,10 +53,12 @@ public class ServerTetrisModel implements TetrisModel, Runnable {
 	 */
 	public void run() {
 		while (!stopped) {
+			maybePause();
 			try {
 				Thread.sleep(500);
 			} catch (InterruptedException e) {
 			}
+			maybePause();
 			synchronized (this) {
 				if (piece.down()) {
 					update();
@@ -64,7 +68,11 @@ public class ServerTetrisModel implements TetrisModel, Runnable {
 					update();
 					if (piece.getPos().getRow() < 0) {
 						stopped = true;
+						paused = false;
 						break;
+					}
+					if(currentPlayer == null) {
+						pause();
 					}
 				}
 			}
@@ -114,6 +122,7 @@ public class ServerTetrisModel implements TetrisModel, Runnable {
 			score += count;
 		}
 		queue.reQueue();
+		currentPlayer = queue.getCurrentPlayer();
 	}
 
 	/**
@@ -126,11 +135,45 @@ public class ServerTetrisModel implements TetrisModel, Runnable {
 	}
 	
 	/**
+	 * Pause the game.
+	 */
+	public synchronized void pause() {
+		paused = true;
+	}
+	
+	private synchronized void maybePause() {
+		try {
+			while (paused)
+				wait();
+		} catch (InterruptedException e) {
+		}
+	}
+
+	/**
+	 * Continue the game when paused.
+	 */
+	public synchronized void resume() {
+		paused = false;
+		notify();
+	}
+	
+	/**
 	 * Return true if the game is stopped.
 	 */
 	@Override
 	public synchronized boolean isStopped() {
 		return stopped;
+	}
+	
+	/**
+	 * Return true if the game is paused.
+	 */
+	public synchronized boolean isPaused() {
+		return paused;
+	}
+	
+	private synchronized boolean isStoppedOrPaused() {
+		return stopped || paused;
 	}
 	
 	@Override
@@ -178,7 +221,7 @@ public class ServerTetrisModel implements TetrisModel, Runnable {
 	 */
 	@Override
 	public void left() {
-		if (isStopped())
+		if (isStoppedOrPaused())
 			return;
 		if (piece.left())
 			update();
@@ -189,7 +232,7 @@ public class ServerTetrisModel implements TetrisModel, Runnable {
 	 */
 	@Override
 	public void right() {
-		if (isStopped())
+		if (isStoppedOrPaused())
 			return;
 		if (piece.right())
 			update();
@@ -200,7 +243,7 @@ public class ServerTetrisModel implements TetrisModel, Runnable {
 	 */
 	@Override
 	public void rotate() {
-		if (isStopped())
+		if (isStoppedOrPaused())
 			return;
 		if (piece.rotate())
 			update();
@@ -211,7 +254,7 @@ public class ServerTetrisModel implements TetrisModel, Runnable {
 	 */
 	@Override
 	public void down() {
-		if (isStopped())
+		if (isStoppedOrPaused())
 			return;
 		if (piece.down())
 			update();
@@ -219,11 +262,17 @@ public class ServerTetrisModel implements TetrisModel, Runnable {
 
 	@Override
 	public boolean connect(String player) {
+		if(paused) {
+			resume();
+		}
 		return queue.add(player);
 	}
 
 	@Override
 	public void disconnect(String player) {
 		queue.remove(player);
+		if(queue.size() == 0) {
+			pause();
+		}
 	}
 }
