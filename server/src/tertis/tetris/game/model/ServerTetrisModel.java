@@ -37,7 +37,7 @@ public class ServerTetrisModel implements TetrisModel, Runnable {
 	/**
 	 * Start the game.
 	 */
-	public void start() {
+	public Thread start() {
 		stopped = false;
 		paused = true;
 		board.clear();
@@ -46,6 +46,7 @@ public class ServerTetrisModel implements TetrisModel, Runnable {
 		score = 0;
 		Thread t = new Thread(this);
 		t.start();
+		return t;
 	}
 	
 
@@ -78,7 +79,11 @@ public class ServerTetrisModel implements TetrisModel, Runnable {
 				}
 			}
 		}
-		System.out.println("exiting run...");
+		try {
+			Thread.sleep(10000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 
 	private void update() {

@@ -19,8 +19,6 @@ import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
-
 import tertis.tetris.game.model.TetrisModel;
 
 @SuppressWarnings("serial")
@@ -145,20 +143,16 @@ public class TetrisView extends JPanel implements Runnable {
 		}
 	}
 
-	//TODO fix
 	public void gameOver() {
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					JOptionPane.showMessageDialog(TetrisView.this, "GAME OVER.\nGobal lines cleared: " + model.getScore() + "\nGlobal Coordination Failed.", "GAME OVER", JOptionPane.INFORMATION_MESSAGE);
-				} catch (HeadlessException e) {
-					e.printStackTrace();
-				} catch (RemoteException e) {
-					e.printStackTrace();
-				}
-				connect.setText("Connect");
-			}
-		});
+		try {
+			JOptionPane.showMessageDialog(TetrisView.this, "GAME OVER.\nGobal lines cleared: " + model.getScore() + "\nGlobal Coordination Failed.",
+					"GAME OVER", JOptionPane.INFORMATION_MESSAGE);
+		} catch (HeadlessException e) {
+			e.printStackTrace();
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
+		System.exit(0);
 	}
 
 	private JButton createConnectButton() {
