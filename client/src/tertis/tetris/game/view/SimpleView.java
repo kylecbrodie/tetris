@@ -21,6 +21,7 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
 import tertis.tetris.game.model.TetrisModel;
+import tertis.tetris.game.server.PlayerQueue;
 
 @SuppressWarnings("serial")
 public class SimpleView extends JPanel implements TetrisView {
@@ -29,13 +30,18 @@ public class SimpleView extends JPanel implements TetrisView {
 	private GridPanel panel;
 	private GridPanel previewPanel;
 	private ScorePanel scorePanel;
+	private QueuePanel queuePanel;
 	private JButton connect;
+	private String name;
 
-	public SimpleView(int height, int width) {
+	public SimpleView(int height, int width, String s) {
+		name = s;
 		panel = new GridPanel(height, width, true, Color.WHITE);
 		previewPanel = new GridPanel(4, 4, false, Color.BLACK);
 
 		scorePanel = new ScorePanel();
+		
+		queuePanel = new QueuePanel();
 
 		this.setLayout(new BorderLayout());
 
@@ -61,6 +67,8 @@ public class SimpleView extends JPanel implements TetrisView {
 
 		box2.add(scorePanel);
 		box2.add(preview);
+		box.add(queuePanel);
+		
 
 		JPanel all = new JPanel();
 		all.setLayout(new BorderLayout());
@@ -87,6 +95,11 @@ public class SimpleView extends JPanel implements TetrisView {
 
 	public void previewChanged() {
 		previewPanel.setModel(model.getPreviewShape());
+	}
+	
+	public void queueChanged()
+	{
+		queuePanel.repaint(model.getPlayerQueue());
 	}
 
 	public void gameOver() {
@@ -187,15 +200,17 @@ public class SimpleView extends JPanel implements TetrisView {
 
 	}
 
-	@Override
-	public void queueChanged() throws RemoteException {
-		//TODO downloaded new queue and display on the side
-	}
 
 	@Override
 	public void yourTurn() throws RemoteException {
 		// TODO send input to server and other stuff
 	}
+	
+	public String getName()
+	{
+		return name;
+	}
+	
 	
 	//TODO remove if unnecessary
 //	private void pauseOrResume() {
